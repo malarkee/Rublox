@@ -15,9 +15,16 @@ class Visitor
 end
 
 class Expr
+  def initialize(*)
+  end
+
+  def accept(*)
+  end
 end
 
 class Binary < Expr
+  attr_accessor :left, :operator, :right
+
   def initialize(left, operator, right)
     @left = left
     @operator = operator
@@ -30,6 +37,8 @@ class Binary < Expr
 end
 
 class Grouping < Expr
+  attr_accessor :expression
+
   def initialize(expression)
     @expression = expression
   end
@@ -40,6 +49,8 @@ class Grouping < Expr
 end
 
 class Literal < Expr
+  attr_accessor :value
+
   def initialize(value)
     @value = value
   end
@@ -50,6 +61,8 @@ class Literal < Expr
 end
 
 class Unary < Expr
+  attr_accessor :operator, :right
+
   def initialize(operator, right)
     @operator = operator
     @right = right

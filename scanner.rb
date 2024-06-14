@@ -4,7 +4,7 @@ require_relative 'token'
 
 # Scanner class for Lox
 class Scanner
-  @keywords = {
+  @@keywords = {
     'and' => :AND,
     'class' => :CLASS,
     'else' => :ELSE,
@@ -86,8 +86,16 @@ class Scanner
   end
 
   def process_slash
-    if match '/'
+    if match '/'    # single-line comments
       advance until peek == "\n" || at_end?
+    elsif match '*' # multi-line comments
+      count = 1
+      until count.zero? || at_end? do
+        count += 1 if peek == '/' && peek_next == '*'
+        count -= 1 if peek == '*' && peek_next == '/'
+        advance
+      end
+      2.times { advance }
     else
       add_token :SLASH
     end
@@ -107,7 +115,7 @@ class Scanner
   end
 
   def process_number
-    advance while peek.match?(/\d/)
+    advance while peek&.match?(/\d/)
     if peek == '.' && peek_next.match?(/\d/)
       advance # consume the '.'
       advance while peek.match?(/\d/)
@@ -117,17 +125,17 @@ class Scanner
   end
 
   def process_identifier
-    advance while peek.match?(/\w/)
+    advance while peek&.match?(/\w/)
     
     text = @src[@start...@current]
-    type = @keywords[text]
+    type = @@keywords[text]
     type = :IDENTIFIER if type.nil?
 
     add_token(type)
   end
 
   def match(expected)
-    return false if at_end? || @src[@current] != expected
+    return false if peek != expected
 
     @current += 1
     true
@@ -138,10 +146,9 @@ class Scanner
     @tokens.push(Token.new(type, text, literal, @line_num))
   end
 
-
   # helper methods
-  def at_end?
-    @current >= @src.length
+  def at_end?(pos = @current)
+    pos >= @src.size
   end
 
   def peek
@@ -149,11 +156,11 @@ class Scanner
   end
 
   def peek_next
-    @current + 1 >= @src.size ? nil : @src[@current + 1]
+    at_end?(@current + 1) ? nil : @src[@current + 1]
   end
 
   def advance
     @current += 1
-    @src[@current - 1]
+    next_char = @src[@current - 1]
   end
 end

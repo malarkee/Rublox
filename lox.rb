@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require_relative 'scanner'
+require_relative 'parser'
+require_relative 'ast_printer'
 
 @had_error = true
 
@@ -33,9 +35,18 @@ end
 def run(src)
   scanner = Scanner.new(src)
   tokens = scanner.tokenize
-  tokens.each do |t|
-    puts t
+  
+  tokens.each do |token|
+    puts token.to_s
   end
+  
+  
+  # parser = Parser.new(tokens)
+  # expression = parser.parse
+  
+  # return if @had_error
+  
+  # puts AstPrinter.new.print expression
 end
 
 def error(line_num, message)
@@ -45,6 +56,14 @@ end
 def report(line_num, where, message)
   puts "[line #{line_num}] Error #{where}: #{message}"
   @had_error = true
+end
+
+def parser_error(token, message)
+  if token.type == :EOF
+    report(token.line, ' at end', message)
+  else
+    report(token.line, " at '#{token.lexeme}'", message)
+  end
 end
 
 main(ARGV, ARGV.size)
